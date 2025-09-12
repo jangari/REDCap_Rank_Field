@@ -1,0 +1,19 @@
+{
+    "name": "Rank field",
+        "namespace": "INTERSECT\\RankField",
+        "description": "Provides a user interface for ranking choices.",
+        "framework-version": 16,
+        "authors": [
+            {
+                "name": "Aidan Wilson",
+                "email": "aidan.wilson@intersect.org.au",
+                "institution": "Intersect Australia"
+            }
+        ],
+        "action-tags": [
+            {
+            "tag": "@RANK",
+            "description": "Must be placed on a descriptive text field. Takes options <code>min</code> (minimum number of fields to include in ranking) and <code>max</code> (maximum number of fields to include in ranking), and <code>fields</code> (a comma-separated list of text input fields to rank)."
+            }
+        ]
+}
