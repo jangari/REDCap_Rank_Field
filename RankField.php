@@ -56,9 +56,8 @@ class RankField extends AbstractExternalModule {
     }
     
     // NOTE: The signature was updated to accept the $showMessage parameter
-    private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $max = null, $showMessage = true) {
+private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $max = null, $showMessage = true) {
         global $Proj;
-
         $fields_to_hide = array_merge([$descriptive_field], $rank_vars);
         $min_attr = is_numeric($min) ? "data-original-min='{$min}'" : "";
         $max_attr = is_numeric($max) ? "data-original-max='{$max}'" : "";
@@ -70,11 +69,10 @@ class RankField extends AbstractExternalModule {
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
         <style>
-            .rank-field-hidden-field { display: none !important; }
+            .rank-field-hidden { position: absolute; left: -9999px;}
             .rank-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px; }
             .rank-box { flex: 1; min-width: 250px; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; background-color: #f9f9f9; min-height: 150px; transition: border-color 0.3s, opacity 0.3s; }
             .rank-box h3 { margin-top: 0; margin-bottom: 15px; color: #555; text-align: center; }
-            /* --- FIX: Style for the dedicated drop zone --- */
             .rank-items-container { min-height: 100px; }
             .rank-item { padding: 10px 15px; background-color: #fff; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 8px; cursor: grab; user-select: none; }
             .rank-box.invalid { border-color: #dc3545; }
@@ -91,14 +89,14 @@ class RankField extends AbstractExternalModule {
             const descriptiveFieldTr = $('#<?php echo $descriptive_field; ?>-tr');
             const allPossibleRankVars = <?php echo $rank_vars_json; ?>;
             const allManagedFields = <?php echo $all_fields_json; ?>;
-            const hidingClass = 'rank-field-hidden-field';
+            const hidingClass = 'rank-field-hidden';
 
             allManagedFields.forEach(fieldName => {
                 $('#' + fieldName + '-tr').addClass(hidingClass);
             });
 
             const rankUIHTML = `
-                <tr id="rank-ui-<?php echo $descriptive_field; ?>" class="rank-field-container">
+                <tr id="rank-ui-<?php echo $descriptive_field; ?>" class="rank-field-container choicevert" style="text-indent: 0px !important; margin-left: 0px !important; margin-right: 0px !important;">
                     <td colspan="2">
                         <div class="rank-container" <?php echo $min_attr; ?> <?php echo $max_attr; ?>>
                             <div id="source-pane-<?php echo $descriptive_field; ?>" class="rank-box">
@@ -106,7 +104,7 @@ class RankField extends AbstractExternalModule {
                                 <div id="source-items-<?php echo $descriptive_field; ?>" class="rank-items-container"></div>
                             </div>
                             <div id="ranking-pane-<?php echo $descriptive_field; ?>" class="rank-box">
-                            <h3><?php echo $this->tt('rank_pane_header'); ?></h3>
+                                <h3><?php echo $this->tt('rank_pane_header'); ?></h3>
                                 <div id="ranking-items-<?php echo $descriptive_field; ?>" class="rank-items-container"></div>
                             </div>
                             <?php if ($showMessage): ?>
@@ -120,13 +118,42 @@ class RankField extends AbstractExternalModule {
 
             const sourcePane = $('#source-pane-<?php echo $descriptive_field; ?>');
             const rankingPane = $('#ranking-pane-<?php echo $descriptive_field; ?>');
-            // --- FIX: Select the new dedicated containers ---
             const sourceItemsContainer = $('#source-items-<?php echo $descriptive_field; ?>');
             const rankingItemsContainer = $('#ranking-items-<?php echo $descriptive_field; ?>');
             const statusMessage = $('#status-<?php echo $descriptive_field; ?>');
             const mainContainer = rankingPane.closest('.rank-container');
 
-            // --- FIX: Initialize SortableJS on the dedicated containers ---
+            // --- FEATURE: Populate all tiles first, based on original fields ---
+            allPossibleRankVars.forEach(fieldName => {
+                const fieldTr = $('#' + fieldName + '-tr');
+                if (fieldTr.length) {
+                    const label = fieldTr.find('.labelrc div[data-mlm-type="label"]').text().trim();
+                    const tile = $(`<div class='rank-item' data-var='${fieldName}'>${label}</div>`);
+                    sourceItemsContainer.append(tile);
+                }
+            });
+
+            // --- NEW: Function to check for saved data and arrange tiles ---
+            function populateInitialRanks() {
+                let rankedItems = [];
+                allPossibleRankVars.forEach(fieldName => {
+                    const input = $('input[name="' + fieldName + '"]');
+                    const rank = parseInt(input.val(), 10);
+                    if (!isNaN(rank) && rank > 0) {
+                        rankedItems.push({ fieldName: fieldName, rank: rank });
+                    }
+                });
+
+                // Sort the items by their saved rank
+                rankedItems.sort((a, b) => a.rank - b.rank);
+
+                // Move the tiles for the ranked items to the ranking pane in the correct order
+                rankedItems.forEach(item => {
+                    const tile = sourceItemsContainer.find(`.rank-item[data-var="${item.fieldName}"]`);
+                    rankingItemsContainer.append(tile);
+                });
+            }
+
             new Sortable(sourceItemsContainer[0], { group: 'ranking-group-<?php echo $descriptive_field; ?>', animation: 150, onSort: updateWarningAndValidationRules });
             new Sortable(rankingItemsContainer[0], { group: 'ranking-group-<?php echo $descriptive_field; ?>', animation: 150, onSort: updateWarningAndValidationRules });
 
@@ -140,12 +167,10 @@ class RankField extends AbstractExternalModule {
                         visibleFields.push(fieldName);
                         fieldTr.addClass(hidingClass);
                     } else {
-                        // If a field becomes hidden, move its tile back to the source pane
-                        const tile = rankingPane.find(`.rank-item[data-var="${fieldName}"]`);
+                        const tile = rankingItemsContainer.find(`.rank-item[data-var="${fieldName}"]`);
                         if(tile.length) sourceItemsContainer.append(tile);
                     }
                 });
-
                 const visibleCount = visibleFields.length;
                 const originalMin = mainContainer.data('original-min') ?? null;
                 const originalMax = mainContainer.data('original-max') ?? null;
@@ -182,20 +207,19 @@ class RankField extends AbstractExternalModule {
                 if (statusMessage.length) {
                     statusMessage.text(message);
                 }
+                // Rebuild only the tiles that are still visible but unranked
                 let availableOptionsHTML = '';
                 visibleFields.forEach(fieldName => {
                     if (rankingItemsContainer.find(`.rank-item[data-var="${fieldName}"]`).length === 0) {
-                        const label = $('#' + fieldName + '-tr').find('.labelrc').text().trim();
+                        const label = $('#' + fieldName + '-tr').find('.labelrc div[data-mlm-type="label"]').text().trim();
                         availableOptionsHTML += `<div class='rank-item' data-var='${fieldName}'>${label}</div>`;
                     }
                 });
-                // --- FIX: Target the container, not the whole pane ---
                 sourceItemsContainer.html(availableOptionsHTML);
                 updateRanksAndValidation();
             }
 
             function updateRanksAndValidation() {
-                // --- FIX: Find ranked items in the correct container ---
                 const rankedItems = rankingItemsContainer.find('.rank-item');
                 const rankedCount = rankedItems.length;
                 const effectiveMin = rankingPane.data('effective-min');
@@ -218,7 +242,6 @@ class RankField extends AbstractExternalModule {
                 }
             }
 
-            // Using the observer from your code, as it worked for you
             const observer = new MutationObserver(updateWarningAndValidationRules);
             allManagedFields.forEach(fieldName => {
                 const fieldTr = document.getElementById(fieldName + '-tr');
@@ -226,6 +249,10 @@ class RankField extends AbstractExternalModule {
                     observer.observe(fieldTr, { attributes: true, attributeFilter: ['style'] });
                 }
             });
+
+            // --- NEW: Call the population function once before the first validation run ---
+            populateInitialRanks();
+            
             updateWarningAndValidationRules();
         });
         </script>
