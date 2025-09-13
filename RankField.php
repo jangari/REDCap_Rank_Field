@@ -69,7 +69,7 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
         <style>
-            .rank-field-hidden { position: absolute; left: -9999px;}
+            .rank-field-hidden { position: absolute; left: -9999px;} /* A hack so that we can hide the original field and yet still inject its value */
             .rank-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px; }
             .rank-box { flex: 1; min-width: 250px; padding: 15px; border: 2px dashed #ccc; border-radius: 8px; background-color: #f9f9f9; min-height: 150px; transition: border-color 0.3s, opacity 0.3s; }
             .rank-box h3 { margin-top: 0; margin-bottom: 15px; color: #555; text-align: center; }
@@ -82,6 +82,33 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
             .rank-status-message.valid-text::after { font-family: "Font Awesome 5 Free"; font-weight: 900; content: "\f058"; margin-left: 8px; }
             .rank-status-message.invalid-text { color: #dc3545; }
             .rank-status-message.valid-text { color: #28a745; }
+            .rank-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px 15px; background-color: #fff; border: 1px solid #ddd;
+                border-radius: 5px; margin-bottom: 8px; cursor: grab; user-select: none;
+            }
+            .rank-badge {
+                display: none; /* Hidden by default */
+                flex-shrink: 0;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background-color: #007bff;
+                color: white;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                line-height: 24px; /* Vertically center the number */
+            }
+            .rank-label {
+                flex-grow: 1;
+            }
+            /* Only show the badge when the tile is in the ranking pane */
+            #ranking-items-<?php echo $descriptive_field; ?> .rank-badge {
+                display: inline-block;
+            }
         </style>
 
         <script>
@@ -128,7 +155,8 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
                 const fieldTr = $('#' + fieldName + '-tr');
                 if (fieldTr.length) {
                     const label = fieldTr.find('.labelrc div[data-mlm-type="label"]').text().trim();
-                    const tile = $(`<div class='rank-item' data-var='${fieldName}'>${label}</div>`);
+                    /* const tile = $(`<div class='rank-item' data-var='${fieldName}'>${label}</div>`); */
+                    const tile = $(`<div class='rank-item' data-var='${fieldName}'><span class="rank-badge"></span><span class="rank-label">${label}</span></div>`);
                     sourceItemsContainer.append(tile);
                 }
             });
@@ -212,7 +240,7 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
                 visibleFields.forEach(fieldName => {
                     if (rankingItemsContainer.find(`.rank-item[data-var="${fieldName}"]`).length === 0) {
                         const label = $('#' + fieldName + '-tr').find('.labelrc div[data-mlm-type="label"]').text().trim();
-                        availableOptionsHTML += `<div class='rank-item' data-var='${fieldName}'>${label}</div>`;
+                        availableOptionsHTML += `<div class='rank-item' data-var='${fieldName}'><span class="rank-badge"></span><span class="rank-label">${label}</span></div>`;
                     }
                 });
                 sourceItemsContainer.html(availableOptionsHTML);
@@ -228,6 +256,13 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
                 rankedItems.each(function(index) {
                     $(this).closest('form').find('input[name="' + $(this).data('var') + '"]').val(index + 1).trigger('change');
                 });
+
+                rankedItems.each(function(index) {
+                    const rank = index + 1;
+                    $(this).find('.rank-badge').text(rank);
+                    $('input[name="' + $(this).data('var') + '"]').val(rank).trigger('change');
+                });
+
                 let isValid = true;
                 if ((effectiveMin !== null && rankedCount < effectiveMin) || (effectiveMax !== null && rankedCount > effectiveMax)) {
                     isValid = false;
