@@ -58,11 +58,10 @@ class RankField extends AbstractExternalModule {
     // NOTE: The signature was updated to accept the $showMessage parameter
 private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $max = null, $showMessage = true) {
         global $Proj;
-        $fields_to_hide = array_merge([$descriptive_field], $rank_vars);
         $min_attr = is_numeric($min) ? "data-original-min='{$min}'" : "";
         $max_attr = is_numeric($max) ? "data-original-max='{$max}'" : "";
         $rank_vars_json = json_encode($rank_vars);
-        $all_fields_json = json_encode($fields_to_hide);
+        $all_fields_json = json_encode($rank_vars);
         ?>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <script src="https://cdn.tailwindcss.com/"></script>
@@ -123,8 +122,7 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
             });
 
             const rankUIHTML = `
-                <tr id="rank-ui-<?php echo $descriptive_field; ?>" class="rank-field-container choicevert" style="text-indent: 0px !important; margin-left: 0px !important; margin-right: 0px !important;">
-                    <td colspan="2">
+                <div id="rank-ui-<?php echo $descriptive_field; ?>" class="rank-field-container choicevert" style="text-indent: 0px !important; margin-left: 0px !important; margin-right: 0px !important;">
                         <div class="rank-container" <?php echo $min_attr; ?> <?php echo $max_attr; ?>>
                             <div id="source-pane-<?php echo $descriptive_field; ?>" class="rank-box">
                                 <h3><?php echo $this->tt('source_pane_header'); ?></h3>
@@ -138,10 +136,14 @@ private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $ma
                                 <div class="rank-status-message" id="status-<?php echo $descriptive_field; ?>"></div>
                             <?php endif; ?>
                         </div>
-                    </td>
-                </tr>
+                </div>
             `;
-            descriptiveFieldTr.after(rankUIHTML);
+            // If the descriptiveFieldTR contains a div#rank-ui-<descriptive_field>, replace it with the rank UI. Otherwise, Insert the rank UI into the descriptive field, after the div[data-kind='field-label']
+            if (descriptiveFieldTr.find('#rank-ui-<?php echo $descriptive_field; ?>').length) {
+                descriptiveFieldTr.find('#rank-ui-<?php echo $descriptive_field; ?>').replaceWith(rankUIHTML);
+            } else {
+                descriptiveFieldTr.find('div[data-kind="field-label"]').after(rankUIHTML);
+            }
 
             const sourcePane = $('#source-pane-<?php echo $descriptive_field; ?>');
             const rankingPane = $('#ranking-pane-<?php echo $descriptive_field; ?>');
