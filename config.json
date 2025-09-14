@@ -1,7 +1,9 @@
 {
     "name": "Rank field",
+        "tt_name": "name",
         "namespace": "INTERSECT\\RankField",
-        "description": "Provides a user interface for ranking choices.",
+        "description": "Converts a series of selected text entry fields on a survey page into a drag-and-drop rank order field. Rank order is then stored in each field's value.",
+        "tt_description": "description",
         "framework-version": 16,
         "authors": [
             {
@@ -13,7 +15,8 @@
         "action-tags": [
             {
             "tag": "@RANK",
-            "description": "Must be placed on a descriptive text field. Takes options <code>min</code> (minimum number of fields to include in ranking) and <code>max</code> (maximum number of fields to include in ranking), and <code>fields</code> (a comma-separated list of text input fields to rank)."
+            "description": "Converts a series of selected text entry fields on a survey page into a drag-and-drop rank order field. Rank order is then stored in each field's value. Must be placed on a descriptive text field. Takes a list of fields to be converted to rankable options using the simplified syntax <code>@RANK=field1,field2,field3,field4,field5</code>.<br/><br/>Advanced usage: Parameter is a JSON object that takes options <code>fields</code>: a comma-separated list of text input fields to rank, <code>min</code>: minimum number of fields to include in ranking (optional), <code>max</code>: maximum number of fields to include in ranking (optional), and <code>message</code>: where <code>false</code> suppresses the default message about how many items need to be ranked (optional; default = <code>true</code>).<br/><br/>Full example: <code>@RANK={\"fields\":\"field1,field2,field3,field4,field5\",\"min\":2,\"max\":5,\"message\":false}</code>.",
+            "tt_description": "rank_description"
             }
         ]
 }
