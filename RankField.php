@@ -36,7 +36,7 @@ class RankField extends AbstractExternalModule {
                 .sortable-ghost { opacity: 0.0; }
                 .rank-badge { display: none; flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background-color: #007bff; color: white; font-size: 12px; font-weight: bold; text-align: center; line-height: 24px; }
                 .rank-label { flex-grow: 1; }
-                .ranking-items-container .rank-badge { display: inline-block; }
+                .rank-items-container .rank-badge { display: inline-block; }
                 .rank-box.invalid { border-color: #dc3545; }
                 .rank-box.valid { border-color: #28a745; }
                 .rank-status-message { color: #666; font-size: 0.9em; margin-top: 10px; height: 1em; text-align: center; transition: color 0.3s; width: 100%; }
@@ -126,11 +126,11 @@ class RankField extends AbstractExternalModule {
                         <div class="rank-container" <?php echo $min_attr; ?> <?php echo $max_attr; ?>>
                             <div id="source-pane-<?php echo $descriptive_field; ?>" class="rank-box">
                                 <h3><?php echo $this->tt('source_pane_header'); ?></h3>
-                                <div id="source-items-<?php echo $descriptive_field; ?>" class="rank-items-container"></div>
+                                <div id="source-items-<?php echo $descriptive_field; ?>" class="source-items-container"></div>
                             </div>
-                            <div id="ranking-pane-<?php echo $descriptive_field; ?>" class="rank-box">
+                            <div id="rank-pane-<?php echo $descriptive_field; ?>" class="rank-box">
                                 <h3><?php echo $this->tt('rank_pane_header'); ?></h3>
-                                <div id="ranking-items-<?php echo $descriptive_field; ?>" class="rank-items-container"></div>
+                                <div id="rank-items-<?php echo $descriptive_field; ?>" class="rank-items-container"></div>
                             </div>
                             <?php if ($showMessage): ?>
                                 <div class="rank-status-message" id="status-<?php echo $descriptive_field; ?>"></div>
@@ -147,9 +147,9 @@ class RankField extends AbstractExternalModule {
             }
 
             const sourcePane = $('#source-pane-<?php echo $descriptive_field; ?>');
-            const rankingPane = $('#ranking-pane-<?php echo $descriptive_field; ?>');
+            const rankingPane = $('#rank-pane-<?php echo $descriptive_field; ?>');
             const sourceItemsContainer = $('#source-items-<?php echo $descriptive_field; ?>');
-            const rankingItemsContainer = $('#ranking-items-<?php echo $descriptive_field; ?>');
+            const rankingItemsContainer = $('#rank-items-<?php echo $descriptive_field; ?>');
             const statusMessage = $('#status-<?php echo $descriptive_field; ?>');
             const mainContainer = rankingPane.closest('.rank-container');
 
