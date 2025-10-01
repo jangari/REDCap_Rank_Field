@@ -22,9 +22,8 @@ class RankField extends AbstractExternalModule {
             self::$assets_loaded = true; // Load resources, but only the first time.
 
             ?>
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-            <script src="https://cdn.tailwindcss.com/"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+            <link rel="stylesheet" href="<?= $this->getUrl('assets/css/tailwind.min.css') ?>">
+            <script src="<?= $this->getUrl('assets/js/sortable.min.js') ?>"></script>
 
             <style>
                 .rank-field-hidden { position: absolute; left: -9999px;}
