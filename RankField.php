@@ -60,12 +60,13 @@ class RankField extends AbstractExternalModule {
                         $min = $params['min'] ?? null;
                         $max = $params['max'] ?? null;
                         $showMessage = ($params['message'] ?? true) !== false;
+                        $prefill = ($params['prefill'] ?? false) === true;
                         $randomise = ($params['randomize'] ?? $params['randomise'] ?? false) === true;
                         // If randomize is true, shuffle the array of field names
                         if ($randomise) {
                             shuffle($rank_vars);
                         }
-                        $this->render_rank_ui($field_name, $rank_vars, $min, $max, $showMessage);
+                        $this->render_rank_ui($field_name, $rank_vars, $min, $max, $showMessage, $prefill);
                     }
                     // If it's an array but 'fields' is missing, we do nothing, as it's an invalid format.
                 } else {
@@ -84,7 +85,7 @@ class RankField extends AbstractExternalModule {
         $this->initialise_ranking_interface($project_id, $record, $instrument);
     }
     
-    private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $max = null, $showMessage = true) {
+    private function render_rank_ui($descriptive_field, $rank_vars, $min = null, $max = null, $showMessage = true, $prefill = false) {
         global $Proj;
         $min_attr = is_numeric($min) ? "data-original-min='{$min}'" : "";
         $max_attr = is_numeric($max) ? "data-original-max='{$max}'" : "";
@@ -115,6 +116,7 @@ class RankField extends AbstractExternalModule {
             const allPossibleRankVars = <?php echo $rank_vars_json; ?>;
             const allManagedFields = <?php echo $all_fields_json; ?>;
             const hidingClass = 'rank-field-hidden';
+            const prefill = <?= json_encode($prefill) ?>;
 
             allManagedFields.forEach(fieldName => {
                 $('#' + fieldName + '-tr').addClass(hidingClass);
@@ -181,6 +183,12 @@ class RankField extends AbstractExternalModule {
                     const tile = sourceItemsContainer.find(`.rank-item[data-var="${item.fieldName}"]`);
                     rankingItemsContainer.append(tile);
                 });
+                
+                // If prefill is true, move all items to the ranking pane
+                if (prefill) {
+                    sourceItemsContainer.children('.rank-item').appendTo(rankingItemsContainer);
+                }
+
             }
 
             new Sortable(sourceItemsContainer[0], { group: 'ranking-group-<?php echo $descriptive_field; ?>', animation: 150, onSort: updateWarningAndValidationRules });
@@ -212,7 +220,11 @@ class RankField extends AbstractExternalModule {
                     sourcePane.hide();
                     rankingPane.hide();
                 } else {
-                    sourcePane.show();
+                    if (prefill) {
+                        sourcePane.hide();
+                    } else {
+                        sourcePane.show();
+                    }
                     rankingPane.show();
                     if (mustRankAll && visibleCount > 0) {
                         message = lang.msg_all;

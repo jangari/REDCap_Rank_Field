@@ -27,6 +27,7 @@ Optionally, the `@RANK` action tag may take a JSON object as an argument, with t
 | `max` | `5` | (Optional) Maximum number of items that may be ranked |
 | `message` | `false` | (Optional; default `true`) Display a message to respondents below the ranking table describing how many (min and/or max) options are to be ranked |
 | `randomise` (or `randomize`) | `true` | (Optional; default `false`) Randomise the order of the options to be ranked, to reduce bias |
+| `prefill` | `false` | (Optional; default `false`) Put all options into ranking pane and hide source pane. Leave option 'max' empty. |
 
 All string keys and values must be wrapped in double quotes; integer and boolean values may be left unquoted. A full example would be:
 
@@ -36,7 +37,8 @@ All string keys and values must be wrapped in double quotes; integer and boolean
     "min":2,
     "max":5,
     "message":false,
-    "randomize":true
+    "randomize":true,
+    "prefill":false
     }
 ```
 
